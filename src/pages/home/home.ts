@@ -3,8 +3,8 @@ import { Component, ViewChild } from '@angular/core';
 import {
  GoogleMaps,
  GoogleMap,
+ GoogleMapsEvent,
  LatLng,
- CameraPosition,
  MarkerOptions,
  Marker
 } from '@ionic-native/google-maps';
@@ -38,33 +38,38 @@ export class HomePage {
   }
 
   initMap (restaurants) {
+    let map: GoogleMap = this.googleMaps.create(this.element.nativeElement);
 
-    restaurants.forEach((restaurant) => {
-      let map: GoogleMap = this.googleMaps.create(this.element.nativeElement);
+    map.one(GoogleMapsEvent.MAP_READY).then((data: any) => {
 
-      let coordinates: LatLng = new LatLng(restaurant.position.lat, restaurant.position.lgn);
-      let cameraPosition: CameraPosition = {
-        target: coordinates,
-         zoom: 17
+      let cameraCoordinates: LatLng = new LatLng(restaurants[0].position.lat, restaurants[0].position.lgn);
+
+      let cameraPosition = {
+        target: cameraCoordinates,
+        zoom: 17
       };
 
-      // move the map's camera to position
-      map.moveCamera(cameraPosition);
+      map.animateCamera(cameraPosition);
 
-      // create new marker
-      let markerOptions: MarkerOptions = {
-        position: coordinates,
-        icon: "assets/images/icons8-Marker-64.png",
-        title: restaurant.title ,
-        infoClick: () => {
-          this.nav.push(RestaurantPage);
-        }
-      };
+      restaurants.forEach((restaurant) => {
 
-      const marker = map.addMarker(markerOptions)
-        .then((marker: Marker) => {
-          marker.showInfoWindow();
-        });
+        let coordinates: LatLng = new LatLng(restaurant.position.lat, restaurant.position.lgn);
+
+        let markerOptions: MarkerOptions = {
+          position: coordinates,
+          icon: "assets/images/icons8-Marker-64.png",
+          title: restaurant.title,
+          infoClick: () => {
+            this.nav.push(RestaurantPage);
+          }
+        };
+
+        const marker = map.addMarker(markerOptions)
+          .then((marker: Marker) => {
+            marker.showInfoWindow();
+          });
+
+      });
     })
   }
 }
